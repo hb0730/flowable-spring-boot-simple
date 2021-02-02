@@ -1,0 +1,31 @@
+server:
+  port: 8081
+  forward-headers-strategy: native
+  compression:
+    enabled: false
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:~/flowable/simple/test
+    username: admin
+    password: 123456
+  h2:
+    console:
+      enabled: true
+      settings:
+        web-allow-others: true
+      path: /h2-console
+logging:
+  level:
+    com.hb0730.flowable: debug
+    org.flowable: debug
+
+management:
+  endpoint:
+    flowable:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'

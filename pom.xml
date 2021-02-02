@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>flowable-spring-boot-started</module>
+        <module>flowable-spring-boot-modeler</module>
+    </modules>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <version>2.4.2</version>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <relativePath/>
+    </parent>
+    <groupId>com.hb0730</groupId>
+    <artifactId>flowable-spring-boot-simple</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <description>flowable springBoot 案例</description>
+    <name>${artifactId}</name>
+
+    <properties>
+        <compile.version>1.8</compile.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <flowable.starter.version>6.6.0</flowable.starter.version>
+    </properties>
+
+    <developers>
+        <developer>
+            <name>hb0730</name>
+            <email>huangbing0730@gmail.com</email>
+            <url>https://blog.hb0730.com</url>
+        </developer>
+    </developers>
+    <dependencyManagement>
+        <dependencies>
+            <!--暴露端点-->
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-spring-boot-starter-actuator</artifactId>
+                <version>${flowable.starter.version}</version>
+            </dependency>
+            <!--来自Flowable Modeler-->
+            <!--rest接口-->
+            <!--配置文件 Configuration-->
+            <!--业务逻辑还有 SQL-->
+            <!--前端-->
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-spring-boot-starter-ui-modeler</artifactId>
+                <version>${flowable.starter.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-spring-boot-starter-ui-idm</artifactId>
+                <version>${flowable.starter.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter</artifactId>
+            <version>${flowable.starter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${compile.version}</source>
+                    <target>${compile.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
