@@ -36,6 +36,11 @@
     </developers>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.12</version>
+            </dependency>
             <!--暴露端点-->
             <dependency>
                 <groupId>org.flowable</groupId>
@@ -52,7 +57,7 @@
                 <artifactId>flowable-spring-boot-starter-ui-modeler</artifactId>
                 <version>${flowable.starter.version}</version>
             </dependency>
-
+            <!--idm-->
             <dependency>
                 <groupId>org.flowable</groupId>
                 <artifactId>flowable-spring-boot-starter-ui-idm</artifactId>
