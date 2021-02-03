@@ -6,6 +6,7 @@
     <modules>
         <module>flowable-spring-boot-started</module>
         <module>flowable-spring-boot-modeler</module>
+        <module>flowable-spring-boot-engine</module>
     </modules>
 
     <parent>
