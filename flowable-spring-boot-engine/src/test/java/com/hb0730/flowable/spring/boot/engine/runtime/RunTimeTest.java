@@ -97,6 +97,18 @@ public class RunTimeTest extends BaseTest {
     }
 
     /**
+     * 查询流程
+     */
+    @Test
+    public void queryProcessInstanceTest() {
+        List<ProcessInstance> approval = runtimeService.createProcessInstanceQuery()
+                .processDefinitionKey("OrderApproval").list();
+        Assert.assertNotNull(approval);
+        //[ProcessInstance[7d249527-65fe-11eb-babb-60f677c75624]]
+        log.info(approval.toString());
+    }
+
+    /**
      * 提交采购订单的审批请求
      * 3. 启动流程
      */
@@ -110,7 +122,8 @@ public class RunTimeTest extends BaseTest {
 //        map.put("purchaseOrderId","111111");
         ProcessInstance instance = runtimeService.startProcessInstanceByKey("OrderApproval", "111111", map);
         Assert.assertNotNull(instance);
-        // 9953e931-65f8-11eb-a705-60f677c75624
+        // 1.9953e931-65f8-11eb-a705-60f677c75624
+        // 2.7d249527-65fe-11eb-babb-60f677c75624
         log.info(instance.getId());
     }
 
@@ -121,7 +134,8 @@ public class RunTimeTest extends BaseTest {
     public void getTaskByUserIdTest() {
         List<Task> list = taskService.createTaskQuery().taskAssignee("Administrator").orderByTaskAssignee().desc().list();
         Assert.assertNotNull(list);
-        //1. [Task[id=311d8090-65f2-11eb-b93b-60f677c75624, name=订单审批]]
+        //1. [Task[id=9953e931-65f8-11eb-a705-60f677c75624, name=订单审批]]
+        //2. [Task[id=7d2c0f3d-65fe-11eb-babb-60f677c75624, name=订单审批]]
         log.info(list.toString());
     }
 
@@ -146,11 +160,27 @@ public class RunTimeTest extends BaseTest {
     }
 
     /**
+     * 4. 审批未通过
+     */
+    @Test
+    public void unAuditTest() {
+        String taskId = "7d2c0f3d-65fe-11eb-babb-60f677c75624";
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (null == task) {
+            throw new RuntimeException("task不存在");
+        }
+        runtimeService.setVariable(task.getExecutionId(), "approved", false);
+        taskService.complete(taskId);
+    }
+
+    /**
      * 5. 生成流程图
      */
     @Test
     public void getProcessDiagram() {
-        String processId = "9953e931-65f8-11eb-a705-60f677c75624";
+        // 9953e931-65f8-11eb-a705-60f677c75624
+        // 7d249527-65fe-11eb-babb-60f677c75624
+        String processId = "7d249527-65fe-11eb-babb-60f677c75624";
         boolean isFish = historyService.createHistoricProcessInstanceQuery()
                 .finished()
                 .processInstanceId(processId).count() > 0;
