@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.flowable.org/processdef">
+  <process id="leaveExpense" name="层级审批" isExecutable="true">
+    <documentation>请假申请</documentation>
+    <startEvent id="start" name="开始" flowable:formFieldValidation="true"></startEvent>
+    <userTask id="fillTask" name="请假申请" flowable:assignee="${taskUser}" flowable:formFieldValidation="true">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="sid-C4A1C0AB-F881-46EB-8F3E-507C83D4CF07"></exclusiveGateway>
+    <userTask id="directorTak" name="经理审批" flowable:assignee="${directorUser}" flowable:formFieldValidation="true">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow1" sourceRef="start" targetRef="fillTask"></sequenceFlow>
+    <exclusiveGateway id="sid-A37CE9BD-5B8C-4F93-8730-F28BDC4A22DE"></exclusiveGateway>
+    <userTask id="bossTask" name="老板审批" flowable:assignee="${bossUser}" flowable:formFieldValidation="true">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://flowable.org/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+    </userTask>
+    <endEvent id="end" name="结束"></endEvent>
+    <sequenceFlow id="directorNotPassFlow" name="驳回" sourceRef="directorTak" targetRef="fillTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${outcome=='驳回'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="fillTask" targetRef="sid-C4A1C0AB-F881-46EB-8F3E-507C83D4CF07"></sequenceFlow>
+    <sequenceFlow id="flow4" name="小于0" sourceRef="sid-C4A1C0AB-F881-46EB-8F3E-507C83D4CF07" targetRef="end">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${day<=0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="judgeLess" name="大于0" sourceRef="sid-C4A1C0AB-F881-46EB-8F3E-507C83D4CF07" targetRef="directorTak">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${day>0}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="directorPassFlow" name="审批通过" sourceRef="directorTak" targetRef="sid-A37CE9BD-5B8C-4F93-8730-F28BDC4A22DE">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${outcome=='通过'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow3" name="大于0,小于3" sourceRef="sid-A37CE9BD-5B8C-4F93-8730-F28BDC4A22DE" targetRef="end">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${0<day&&day<3}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="bossPassFlow" name="审批通过" sourceRef="bossTask" targetRef="end">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${outcome=='通过'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="judgeMore" name="大于等于3" sourceRef="sid-A37CE9BD-5B8C-4F93-8730-F28BDC4A22DE" targetRef="bossTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${day>=3}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="bossNotPassFlow" name="驳回" sourceRef="bossTask" targetRef="fillTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${outcome=='驳回'}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_leaveExpense">
+    <bpmndi:BPMNPlane bpmnElement="leaveExpense" id="BPMNPlane_leaveExpense">
+      <bpmndi:BPMNShape bpmnElement="start" id="BPMNShape_start">
+        <omgdc:Bounds height="30.0" width="30.0" x="85.0" y="285.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="fillTask" id="BPMNShape_fillTask">
+        <omgdc:Bounds height="80.0" width="100.0" x="225.0" y="260.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-C4A1C0AB-F881-46EB-8F3E-507C83D4CF07" id="BPMNShape_sid-C4A1C0AB-F881-46EB-8F3E-507C83D4CF07">
+        <omgdc:Bounds height="40.0" width="40.0" x="405.0" y="280.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="directorTak" id="BPMNShape_directorTak">
+        <omgdc:Bounds height="80.0" width="100.0" x="540.0" y="260.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-A37CE9BD-5B8C-4F93-8730-F28BDC4A22DE" id="BPMNShape_sid-A37CE9BD-5B8C-4F93-8730-F28BDC4A22DE">
+        <omgdc:Bounds height="40.0" width="40.0" x="720.0" y="280.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bossTask" id="BPMNShape_bossTask">
+        <omgdc:Bounds height="80.0" width="100.0" x="855.0" y="260.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="end" id="BPMNShape_end">
+        <omgdc:Bounds height="28.0" width="28.0" x="585.0" y="455.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="114.94999940317363" y="300.0"></omgdi:waypoint>
+        <omgdi:waypoint x="224.99999999993753" y="300.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="324.9499999998728" y="300.0"></omgdi:waypoint>
+        <omgdi:waypoint x="405.0" y="300.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="judgeLess" id="BPMNEdge_judgeLess">
+        <omgdi:waypoint x="444.9439582070356" y="300.0"></omgdi:waypoint>
+        <omgdi:waypoint x="539.9999999999847" y="300.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="740.0" y="319.94410112359554"></omgdi:waypoint>
+        <omgdi:waypoint x="740.0" y="469.0"></omgdi:waypoint>
+        <omgdi:waypoint x="612.949927727839" y="469.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="directorNotPassFlow" id="BPMNEdge_directorNotPassFlow">
+        <omgdi:waypoint x="590.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="590.0" y="159.0"></omgdi:waypoint>
+        <omgdi:waypoint x="275.0" y="159.0"></omgdi:waypoint>
+        <omgdi:waypoint x="275.0" y="260.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="425.0" y="319.94410112359543"></omgdi:waypoint>
+        <omgdi:waypoint x="425.0" y="469.0"></omgdi:waypoint>
+        <omgdi:waypoint x="585.0" y="469.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bossPassFlow" id="BPMNEdge_bossPassFlow">
+        <omgdi:waypoint x="905.0" y="339.95000000000005"></omgdi:waypoint>
+        <omgdi:waypoint x="905.0" y="469.0"></omgdi:waypoint>
+        <omgdi:waypoint x="612.9499196175664" y="469.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="judgeMore" id="BPMNEdge_judgeMore">
+        <omgdi:waypoint x="759.9439582070356" y="300.0"></omgdi:waypoint>
+        <omgdi:waypoint x="854.9999999999847" y="300.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="directorPassFlow" id="BPMNEdge_directorPassFlow">
+        <omgdi:waypoint x="639.9499999999999" y="300.0"></omgdi:waypoint>
+        <omgdi:waypoint x="720.0" y="300.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bossNotPassFlow" id="BPMNEdge_bossNotPassFlow">
+        <omgdi:waypoint x="905.0" y="260.0"></omgdi:waypoint>
+        <omgdi:waypoint x="905.0" y="155.0"></omgdi:waypoint>
+        <omgdi:waypoint x="275.0" y="155.0"></omgdi:waypoint>
+        <omgdi:waypoint x="275.0" y="260.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
