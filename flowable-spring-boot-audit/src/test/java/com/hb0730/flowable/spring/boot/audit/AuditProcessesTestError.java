@@ -36,7 +36,7 @@ import java.util.Map;
  * @author bing_huang
  */
 @Slf4j
-public class AuditProcessesTest2 extends ProcessesTest {
+public class AuditProcessesTestError extends ProcessesTest {
     @Autowired
     protected RuntimeService runtimeService;
     @Autowired
@@ -163,7 +163,7 @@ public class AuditProcessesTest2 extends ProcessesTest {
     /**
      * 全流程
      */
-    public static class FlowTest extends AuditProcessesTest2 implements Audit {
+    public static class FlowTest extends AuditProcessesTestError implements Audit {
         @Test
         public void directorAudit() {
             List<Task> tasks = TaskUtils.getTasksByAssignee("zhangsan");
