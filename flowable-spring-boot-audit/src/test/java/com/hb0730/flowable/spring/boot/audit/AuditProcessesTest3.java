@@ -57,18 +57,6 @@ public class AuditProcessesTest3 extends ProcessesTest {
         star(3);
     }
 
-    /**
-     * 驳回，重新发起
-     */
-    @Test
-    public void restart() {
-        List<Task> tasks = TaskUtils.findTasksByOrderByTaskCreateTime("zhangsan");
-        Assert.assertNotNull(tasks);
-        Task task = tasks.get(0);
-        runtimeService.setVariable(task.getExecutionId(), "day", 2);
-        setParams("zhangsan");
-    }
-
     public void star(Integer day) {
         //指定提交人
         // 指定下一审批人
@@ -80,7 +68,7 @@ public class AuditProcessesTest3 extends ProcessesTest {
         params.put("taskUser", "zhangsan");
         // 流程变量
         params.put("day", day);
-        runtimeService.startProcessInstanceById(definition.getId(), "test2020020500011", params);
+        runtimeService.startProcessInstanceById(definition.getId(), "test2020020500030", params);
         setParams("zhangsan");
     }
 
@@ -143,11 +131,19 @@ public class AuditProcessesTest3 extends ProcessesTest {
                 .orderByHistoricActivityInstanceStartTime()
                 .asc()
                 .list();
+        //高亮节点
         for (HistoricActivityInstance activityInstance : highLightedActivitList) {
             String activityId = activityInstance.getActivityId();
             highLightedActivitis.add(activityId);
         }
-        List<String> flows = new ArrayList<>();
+        List<String> highLightedflows = new ArrayList<>();
+        //高亮线
+        for (HistoricActivityInstance tempActivity : highLightedActivitList) {
+            if ("sequenceFlow".equals(tempActivity.getActivityType())) {
+                highLightedflows.add(tempActivity.getActivityId());
+            }
+        }
+
         //获取流程图
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
         ProcessEngineConfiguration engineConfiguration = processEngine.getProcessEngineConfiguration();
@@ -158,7 +154,7 @@ public class AuditProcessesTest3 extends ProcessesTest {
                 bpmnModel
                 , "png"
                 , highLightedActivitis
-                , flows
+                , highLightedflows
                 , "宋体"
                 , "宋体"
                 , "宋体"
@@ -186,8 +182,8 @@ public class AuditProcessesTest3 extends ProcessesTest {
             Task task = tasks.get(0);
             // 设置下一流程审批者
             setAuditor(task.getExecutionId(), "bossUser", "boss");
-            Map<String, Object> variables = new HashMap<>();
-            variables.put("outcome", "同意");
+//            Map<String, Object> variables = getCallbackVariables();
+            Map<String, Object> variables = getSuccessVariables();
             audit(task.getId(), variables);
         }
 
@@ -206,6 +202,19 @@ public class AuditProcessesTest3 extends ProcessesTest {
         @Override
         public void audit(String taskId, Map<String, Object> params) {
             taskService.complete(taskId, params);
+        }
+
+        public static Map<String, Object> getSuccessVariables() {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("outcome", "同意");
+            return variables;
+        }
+
+        public static Map<String, Object> getCallbackVariables() {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("outcome", "驳回");
+            variables.put("taskUser", "zhangsan");
+            return variables;
         }
     }
 
