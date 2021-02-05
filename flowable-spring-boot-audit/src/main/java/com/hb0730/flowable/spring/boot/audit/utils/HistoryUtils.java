@@ -18,7 +18,7 @@ public class HistoryUtils extends BaseUtils {
 
     public static List<HistoricProcessInstance> getHistoryByDeploymentId(String deploymentId) {
         return getService().createHistoricProcessInstanceQuery()
-                .deploymentId(deploymentId).orderByProcessInstanceStartTime().orderByProcessInstanceEndTime().desc().list();
+                .deploymentId(deploymentId).orderByProcessInstanceStartTime().desc().list();
     }
 
     public static HistoryService getService() {
