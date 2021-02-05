@@ -9,19 +9,19 @@ import java.util.List;
 /**
  * @author bing_huang
  */
-public class HistoryUtils extends BaseUtils{
+public class HistoryUtils extends BaseUtils {
 
-    public static List<HistoricActivityInstance> getHistoryByProcessInstanceId(String processInstanceId){
+    public static List<HistoricActivityInstance> getHistoryByProcessInstanceId(String processInstanceId) {
         return getService().createHistoricActivityInstanceQuery()
                 .processInstanceId(processInstanceId).list();
     }
 
-    public static HistoricProcessInstance getHistoryByDeploymentId(String deploymentId){
+    public static List<HistoricProcessInstance> getHistoryByDeploymentId(String deploymentId) {
         return getService().createHistoricProcessInstanceQuery()
-                .deploymentId(deploymentId).singleResult();
+                .deploymentId(deploymentId).orderByProcessInstanceStartTime().orderByProcessInstanceEndTime().desc().list();
     }
 
-    public static HistoryService getService(){
+    public static HistoryService getService() {
         return getService(HistoryService.class);
     }
 }

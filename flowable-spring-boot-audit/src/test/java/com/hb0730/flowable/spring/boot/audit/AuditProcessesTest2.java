@@ -4,7 +4,6 @@ import cn.hutool.core.img.ImgUtil;
 import com.hb0730.flowable.spring.boot.audit.processes.ProcessesTest;
 import com.hb0730.flowable.spring.boot.audit.utils.HistoryUtils;
 import com.hb0730.flowable.spring.boot.audit.utils.RepositoryUtils;
-import com.hb0730.flowable.spring.boot.audit.utils.RuntimeUtils;
 import com.hb0730.flowable.spring.boot.audit.utils.TaskUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.BpmnModel;
@@ -31,12 +30,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 流程审批
+ * 流程审批-天数大于1且小于2
  *
  * @author bing_huang
  */
 @Slf4j
-public class AuditProcessesTest extends ProcessesTest {
+public class AuditProcessesTest2 extends ProcessesTest {
     @Autowired
     protected RuntimeService runtimeService;
     @Autowired
@@ -55,47 +54,30 @@ public class AuditProcessesTest extends ProcessesTest {
      */
     @Test
     public void startTest() {
+        //指定提交人
+        // 指定下一审批人
         Deployment deployment = RepositoryUtils.deploymentByKey(MODEL_KEY);
-        ProcessDefinition processDefinition = RepositoryUtils.getProcessDefinitionByDeploymentId(deployment.getId());
+        Assert.assertNotNull("流程未部署", deployment);
+        ProcessDefinition definition = RepositoryUtils.getProcessDefinitionByDeploymentId(deployment.getId());
         Map<String, Object> params = new HashMap<>();
+        // 提交人
         params.put("taskUser", "zhangsan");
-        params.put("directorUser", "director");
-        params.put("bossUser", "boss");
-        runtimeService.startProcessInstanceById(processDefinition.getId(), "test1111", params);
+        runtimeService.startProcessInstanceById(definition.getId(), "test2020020500003", params);
+        setDayParams(4, "zhangsan");
     }
 
-    protected ProcessInstance processInstanceId() {
-        Deployment deployment = RepositoryUtils.deploymentByKey(MODEL_KEY);
-        return runtimeService.createProcessInstanceQuery().deploymentId(deployment.getId()).singleResult();
-    }
-
-    /**
-     * 3. 设置天数
-     */
-    @Test
-    public void setParams() {
-        ProcessInstance processInstance = processInstanceId();
-        Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
-        taskService.setVariable(task.getId(), "day", 4);
+    public void setDayParams(Integer day, String assignee) {
+        List<Task> tasks = TaskUtils.findTasksByOrderByTaskCreateTime(assignee);
+        Assert.assertNotNull(tasks);
+        Task task = tasks.get(0);
+        setAuditor(task.getExecutionId(), "directorUser", "director");
+        // 局部变量
+        taskService.setVariable(task.getId(), "day", day);
         taskService.complete(task.getId());
     }
 
-    @Test
-    public void tasksTest() {
-        Deployment deployment = RepositoryUtils.deploymentByKey(MODEL_KEY);
-        ProcessInstance processInstance = RuntimeUtils.getProcessInstanceIdByDeploymentId(deployment.getId());
-        List<Task> task = TaskUtils.getTaskByProcessInstanceId(processInstance.getId());
-        //224c1f2b-66c0-11eb-8baa-60f677c75624
-        Assert.assertNotNull(task);
-    }
-
-
-    @Test
-    public void eventTest() {
-        Deployment deployment = RepositoryUtils.deploymentByKey(MODEL_KEY);
-        ProcessInstance processInstance = RuntimeUtils.getProcessInstanceIdByDeploymentId(deployment.getId());
-        List<HistoricActivityInstance> instanceId = HistoryUtils.getHistoryByProcessInstanceId(processInstance.getId());
-        Assert.assertNotNull(instanceId);
+    public void setAuditor(String executionId, String name, String value) {
+        runtimeService.setVariable(executionId, name, value);
     }
 
     /**
@@ -103,10 +85,10 @@ public class AuditProcessesTest extends ProcessesTest {
      */
     @Test
     @After
-    public void getProcessDiagram() {
+    public void getProcessDiagram() { String processId = "";
         Deployment deployment = RepositoryUtils.deploymentByKey(MODEL_KEY);
-        List<HistoricProcessInstance> historys = HistoryUtils.getHistoryByDeploymentId(deployment.getId());
-        String processId = historys.get(0).getId();
+        List<HistoricProcessInstance> historicProcessInstances = HistoryUtils.getHistoryByDeploymentId(deployment.getId());
+        processId = historicProcessInstances.get(0).getId();
         boolean isFish = historyService.createHistoricProcessInstanceQuery()
                 .finished()
                 .processInstanceId(processId).count() > 0;
@@ -164,22 +146,25 @@ public class AuditProcessesTest extends ProcessesTest {
         ImgUtil.write(bufferedImage, file);
     }
 
+
     /**
      * 全流程
      */
-    public static class FlowTest extends AuditProcessesTest implements Audit {
+    public static class FlowTest extends AuditProcessesTest2 implements Audit {
         /**
          * 经理审批
          */
         @Test
         public void directorAudit() {
-            ProcessInstance instance = processInstanceId();
-            List<Task> tasks = TaskUtils.getTaskByProcessInstanceId(instance.getId());
+            List<Task> tasks = TaskUtils.findTasksByOrderByTaskCreateTime("director");
             Assert.assertNotNull(tasks);
             Task task = tasks.get(0);
-            Map<String, Object> params = new HashMap<>();
-            params.put("outcome", "通过");
-            audit(task.getId(), "director", params);
+            // 设置下一流程审批者
+            setAuditor(task.getExecutionId(), "bossUser", "boss");
+
+            Map<String, Object> variables = taskService.getVariables(task.getId());
+            variables.put("outcome", "通过");
+            audit(task.getId(), variables);
         }
 
         /**
@@ -187,30 +172,20 @@ public class AuditProcessesTest extends ProcessesTest {
          */
         @Test
         public void bossAudit() {
-            ProcessInstance instance = processInstanceId();
-            List<Task> tasks = TaskUtils.getTaskByProcessInstanceId(instance.getId());
+            List<Task> tasks = TaskUtils.findTasksByOrderByTaskCreateTime("boss");
             Assert.assertNotNull(tasks);
             Task task = tasks.get(0);
-            Map<String, Object> params = new HashMap<>();
-            params.put("outcome", "通过");
-            audit(task.getId(), "boss", params);
+            taskService.setVariable(task.getId(), "outcome", "通过");
+            audit(task.getId(), null);
         }
 
         @Override
-        public void audit(String taskId, String user, Map<String, Object> params) {
-            Task task = TaskUtils.getTaskById(taskId);
-            Assert.assertNotNull(taskId);
-            Map<String, Object> variables = runtimeService.getVariables(task.getExecutionId());
-            Object day = variables.get("day");
-            if (null == day || Integer.parseInt(day.toString()) <= 0) {
-                day = 0;
-            }
-            params.put("day", day);
+        public void audit(String taskId, Map<String, Object> params) {
             taskService.complete(taskId, params);
         }
     }
 
     interface Audit {
-        void audit(String taskId, String user, Map<String, Object> params);
+        void audit(String taskId, Map<String, Object> params);
     }
 }

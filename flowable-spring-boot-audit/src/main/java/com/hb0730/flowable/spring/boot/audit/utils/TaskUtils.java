@@ -23,6 +23,12 @@ public class TaskUtils extends BaseUtils {
                 .list();
     }
 
+    public static List<Task> findTasksByOrderByTaskCreateTime(String assignee) {
+        return getService().createTaskQuery()
+                .taskAssignee(assignee)
+                .orderByTaskCreateTime().desc().list();
+    }
+
     public static List<Task> getTaskByProcessInstanceId(String processInstanceId) {
         return getService().createTaskQuery()
                 .processInstanceId(processInstanceId)

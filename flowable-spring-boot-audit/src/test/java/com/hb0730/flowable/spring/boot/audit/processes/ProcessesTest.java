@@ -12,6 +12,7 @@ import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ import java.util.List;
  */
 @Slf4j
 public class ProcessesTest extends BaseTest {
+    @Qualifier("repositoryService")
     @Autowired
     private RepositoryService service;
     @Autowired
